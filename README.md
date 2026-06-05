@@ -15,8 +15,9 @@ Rediseño completo del sitio de la **Asociación de Magistrados Judiciales del P
 ## Estructura
 
 ```
+index.html                  ← Redirect a amjp/ (raíz para Vercel/GitHub Pages)
 amjp/
-  Noticias AMJP.html      ← Entry point + estilos (CSS)
+  index.html               ← Entry point + estilos (CSS)
   app.jsx                  ← Componentes React (SPA + router hash)
   helpers.jsx              ← Categorías, formato de fecha, íconos, Placeholder de imágenes
   tweaks-panel.jsx         ← Panel de tweaks (dev only)
@@ -52,7 +53,7 @@ Se necesita Node.js para `http-server`. Cualquier servidor estático sirve.
 ```powershell
 cd "<ruta al proyecto>"
 npx http-server -p 8766 -c-1
-# Abre http://localhost:8766/amjp/Noticias%20AMJP.html
+# Abre http://localhost:8766/amjp/
 ```
 
 > Importante: el servidor debe arrancar desde la **raíz del proyecto** (no desde `amjp/`) para que las rutas relativas `../uploads/...` resuelvan a las imágenes.
