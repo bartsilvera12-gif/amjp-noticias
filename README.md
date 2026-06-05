@@ -1,4 +1,14 @@
-# AMJP — Rediseño Web
+<p align="center">
+  <img src="amjp/logo-amjp.png" alt="Escudo AMJP" width="128" height="128"/>
+</p>
+
+<h1 align="center">AMJP — Rediseño Web</h1>
+
+<p align="center">
+  <em>Asociación de Magistrados Judiciales del Paraguay</em>
+</p>
+
+---
 
 Rediseño completo del sitio de la **Asociación de Magistrados Judiciales del Paraguay** ([amjp.org.py](https://www.amjp.org.py/)), implementado como **single-page app** con React + Babel en navegador, sin build step.
 
