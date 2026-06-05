@@ -510,6 +510,15 @@ function FilterBar({ q, setQ, year, setYear, cat, setCat, years, cats, resultCou
             <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Buscar en noticias…" aria-label="Buscar noticias"/>
             {q && <button type="button" className="search-x" onClick={()=>setQ("")} aria-label="Limpiar"><Icon.close/></button>}
           </div>
+          {cats && cats.length > 0 && (
+            <div className="yr">
+              <select value={cat} onChange={e=>setCat(e.target.value)} aria-label="Filtrar por categoría">
+                <option value="all">Todas las categorías</option>
+                {cats.map(c=> <option key={c} value={c}>{CATS[c].label}</option>)}
+              </select>
+              <Icon.chevron className="yr-caret"/>
+            </div>
+          )}
           <div className="yr">
             <select value={year} onChange={e=>setYear(e.target.value)} aria-label="Filtrar por año">
               <option value="all">Todos los años</option>
@@ -518,16 +527,6 @@ function FilterBar({ q, setQ, year, setYear, cat, setCat, years, cats, resultCou
             <Icon.chevron className="yr-caret"/>
           </div>
         </div>
-        {cats && cats.length > 0 && (
-          <div className="cat-chips" role="tablist">
-            <button className={"cc"+(cat==="all"?" is-on":"")} onClick={()=>setCat("all")}>Todas</button>
-            {cats.map(c=>(
-              <button key={c} className={"cc"+(cat===c?" is-on":"")} onClick={()=>setCat(c)}>
-                <span className="cc-dot" style={{ background:CATS[c].color }}></span>{CATS[c].label}
-              </button>
-            ))}
-          </div>
-        )}
         {filtering && <div className="fb-count">{resultCount} {resultCount===1?"resultado":"resultados"}</div>}
       </div>
     </div>
