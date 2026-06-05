@@ -1,0 +1,23 @@
+# Archivos intermedios del scraping (se pueden regenerar)
+noticias-raw.html
+sample-article.html
+raw-sections/
+manifest.json
+bodies.json
+bodies-failures.json
+failures.json
+data-*.json
+
+# Outputs/logs
+*.log
+.DS_Store
+Thumbs.db
+
+# Dependencias (no usamos package.json, solo http-server vía npx)
+node_modules/
+package-lock.json
+
+# Editor
+.vscode/
+.idea/
+*.swp
