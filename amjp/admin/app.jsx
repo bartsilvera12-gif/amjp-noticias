@@ -1014,6 +1014,9 @@ function StudentEditor({ id, onDone, onCancel, onCreated }){
 
   useEffect(()=>{ Api.listLmsCourses().then(setAllCourses).catch(()=>{}); }, []);
   useEffect(()=>{
+    // Al montar, al crear (new→edit) o al cambiar de alumno: reiniciar el estado
+    // del formulario. Sin esto, tras crear el botón queda trabado en "Guardando…".
+    setSaving(false); setPassword(""); setErr("");
     if (isNew){ setLoading(false); return; }
     let alive = true;
     Api.getStudent(id).then(s => {
