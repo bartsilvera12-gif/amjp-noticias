@@ -1119,12 +1119,31 @@ function HomePage({ photos }){
 }
 
 /* ---------- Lista genérica (Resoluciones/Cursos/Eventos/Deportes) ---------- */
-function SectionList({ items, photos, title, kicker, crumbs, sub, defaultCat }){
+function SectionList({ items, photos, title, kicker, crumbs, sub, defaultCat, flat }){
   const enriched = useMemo(()=> items.map(n=>({ ...n, cat: n.cat || defaultCat || categorize(n.t) })), [items, defaultCat]);
   const sorted = useMemo(()=> enriched.slice().sort((a,b)=> b.d.localeCompare(a.d) || b.id-a.id), [enriched]);
   const [sel, setSel] = useState(null);
   const openItem = (item)=> setSel(sorted.findIndex(n=>n.id===item.id));
   const selItem = sel==null ? null : sorted[sel];
+
+  const modal = selItem && (
+    <ArticleModal item={selItem} onClose={()=>setSel(null)}
+      onPrev={()=>setSel(s=>Math.max(0,s-1))} onNext={()=>setSel(s=>Math.min(sorted.length-1,s+1))}
+      hasPrev={sel>0} hasNext={sel<sorted.length-1}/>
+  );
+
+  // Modo "grilla plana": todos los ítems juntos en cards del mismo tamaño, sin portada ni destacados.
+  if (flat){
+    return (
+      <>
+        <PageHead crumbs={crumbs} title={title} sub={sub}/>
+        <main className="wrap main">
+          <NewsList items={sorted} onOpen={openItem} grouped={false}/>
+        </main>
+        {modal}
+      </>
+    );
+  }
 
   const portadaItems = sorted.slice(0, Math.min(5, sorted.length));
   const featured = sorted.slice(portadaItems.length, portadaItems.length + 3);
@@ -1140,11 +1159,7 @@ function SectionList({ items, photos, title, kicker, crumbs, sub, defaultCat }){
         {rest.length > 0 && <div className="sec-head sec-head--list"><h2 className="sec-title">Archivo completo</h2><span className="sec-rule"></span></div>}
         {rest.length > 0 && <NewsList items={rest} onOpen={openItem} grouped={true}/>}
       </main>
-      {selItem && (
-        <ArticleModal item={selItem} onClose={()=>setSel(null)}
-          onPrev={()=>setSel(s=>Math.max(0,s-1))} onNext={()=>setSel(s=>Math.min(sorted.length-1,s+1))}
-          hasPrev={sel>0} hasNext={sel<sorted.length-1}/>
-      )}
+      {modal}
     </>
   );
 }
@@ -1676,7 +1691,7 @@ function App(){
         sub="Decisiones de la Plenaria de la Corte Suprema de Justicia y otras resoluciones relevantes."
         defaultCat="Institucional"/>; break;
     case ROUTES.CURSOS:
-      page = <SectionList items={window.CURSOS} photos={t.photos}
+      page = <SectionList items={window.CURSOS} photos={t.photos} flat
         title="Cursos" kicker="Curso destacado"
         crumbs={[{label:"Inicio", href:ROUTES.HOME},{label:"Socios"},{label:"Cursos"}]}
         sub="Capacitación continua para magistrados, fiscales y defensores."

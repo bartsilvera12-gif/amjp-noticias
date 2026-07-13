@@ -640,7 +640,9 @@ button{ font-family:inherit; cursor:pointer; }
 .ac-group .yd-num{ font-family:var(--title-font); font-weight:700; font-size:34px; letter-spacing:-.01em; color:var(--ink); line-height:1; }
 .ac-group .yd-line{ height:1px; flex:1; background:var(--line-strong); }
 
-.ac-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:32px; }
+.ac-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:32px; grid-auto-rows:1fr; }
+/* Cards del grid: mismo alto en todas las filas y título acotado a 2 líneas */
+.ac-grid .ac-title{ display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 .ac{ display:flex; flex-direction:column; background:var(--card); border:1px solid var(--line); border-radius:14px;
   overflow:hidden; cursor:pointer; transition:transform .35s cubic-bezier(.22,.61,.36,1), box-shadow .35s, border-color .35s; }
 .ac:hover{ transform:translateY(-4px); border-color:color-mix(in srgb, var(--accent) 35%, var(--line));
