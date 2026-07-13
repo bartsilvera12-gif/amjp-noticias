@@ -26,6 +26,7 @@ const ROUTES = {
   INSCR: "/inscripcion",
   GAL: "/galeria-de-imagenes",
   CONT: "/contacto",
+  PRIV: "/privacidad",
 };
 
 function parseHash(){
@@ -882,6 +883,7 @@ function Footer(){
       ["Inscripción", ROUTES.INSCR],
       ["Galería de imágenes", ROUTES.GAL],
       ["Contacto", ROUTES.CONT],
+      ["Política de Privacidad", ROUTES.PRIV],
     ]],
   ];
   return (
@@ -903,6 +905,7 @@ function Footer(){
       <div className="footer-bar">
         <div className="wrap footer-bar-in">
           <span>© {new Date().getFullYear()} Asociación de Magistrados Judiciales del Paraguay</span>
+          <span className="fb-credit">Desarrollado por <strong>Neura</strong></span>
           <span className="fb-meta">Casa del Magistrado · Asunción, Paraguay</span>
         </div>
       </div>
@@ -1498,6 +1501,140 @@ function ContactoPage(){
   );
 }
 
+/* ---------- Política de Privacidad (plantilla reutilizable por cliente) ---------- */
+/* Página estándar para las webs desarrolladas por Neura.
+   RESPONSABLE DE LOS DATOS = el cliente (la organización dueña del sitio).
+   Neura figura SOLO como proveedor tecnológico / encargado del tratamiento (no es dueño de los datos).
+   Para reutilizar en otro cliente: reemplazar únicamente los valores de EMPRESA. */
+const EMPRESA = {
+  nombre: "Asociación de Magistrados Judiciales del Paraguay",
+  ruc: "",                 // ← completar con el RUC del cliente
+  email: "",               // ← completar con el correo oficial del cliente
+  telefono: "+595 21 425 100",
+  direccion: "De la Conquista 1415 e/ Cap. Gwynn y Carlos A. López, Sajonia, Asunción, Paraguay",
+};
+const PROVEEDOR = { nombre: "Neura", rol: "proveedor tecnológico y encargado del tratamiento" };
+const PRIV_UPDATED = "13 de julio de 2026";
+
+function PrivacidadPage(){
+  // Muestra el valor si está cargado; si no, un marcador discreto para completar.
+  const dato = (v)=> v && v.trim() ? <strong>{v}</strong> : <em className="legal-todo">(por completar)</em>;
+  const E = EMPRESA;
+  return (
+    <>
+      <PageHead crumbs={[{label:"Inicio", href:ROUTES.HOME},{label:"Política de Privacidad"}]}
+        title="Política de Privacidad"
+        sub="Cómo se recopilan, usan y protegen los datos personales en este sitio."/>
+      <main className="wrap main">
+        <div className="legal">
+          <p className="legal-updated">Última actualización: {PRIV_UPDATED}</p>
+
+          <p>
+            La presente Política de Privacidad describe cómo {dato(E.nombre)} (en adelante,
+            «la Organización») recopila, utiliza, conserva y protege los datos personales de las
+            personas que utilizan este sitio web. La Organización es la <strong>responsable del
+            tratamiento</strong> de los datos personales recogidos a través de este sitio.
+          </p>
+
+          <h2>1. Responsable del tratamiento</h2>
+          <p>El responsable del tratamiento de tus datos personales es:</p>
+          <ul className="legal-list">
+            <li><span className="legal-lbl">Organización:</span> {dato(E.nombre)}</li>
+            <li><span className="legal-lbl">RUC:</span> {dato(E.ruc)}</li>
+            <li><span className="legal-lbl">Domicilio:</span> {dato(E.direccion)}</li>
+            <li><span className="legal-lbl">Correo electrónico:</span> {dato(E.email)}</li>
+            <li><span className="legal-lbl">Teléfono:</span> {dato(E.telefono)}</li>
+          </ul>
+
+          <h2>2. Qué datos recopilamos</h2>
+          <p>Podemos recopilar los siguientes datos personales, siempre que vos los proporciones de forma voluntaria a través del sitio:</p>
+          <ul className="legal-list">
+            <li>Datos de identificación y contacto: nombre y apellido, cédula de identidad, correo electrónico, teléfono y domicilio.</li>
+            <li>Información enviada mediante los formularios del sitio (contacto, inscripción, actualización de datos y solicitudes).</li>
+            <li>Datos de acceso a áreas privadas (por ejemplo, credenciales de alumnos del aula virtual, cuando corresponda).</li>
+            <li>Datos técnicos de navegación estrictamente necesarios para el funcionamiento del sitio.</li>
+          </ul>
+
+          <h2>3. Finalidad del tratamiento</h2>
+          <p>Los datos se utilizan únicamente para las siguientes finalidades:</p>
+          <ul className="legal-list">
+            <li>Responder consultas, solicitudes y comunicaciones enviadas a través del sitio.</li>
+            <li>Gestionar inscripciones, membresías y la actualización de datos de los interesados.</li>
+            <li>Brindar acceso a los servicios y contenidos disponibles para usuarios registrados.</li>
+            <li>Cumplir con obligaciones legales y con los fines institucionales de la Organización.</li>
+          </ul>
+
+          <h2>4. Base del tratamiento y consentimiento</h2>
+          <p>
+            El tratamiento de tus datos se basa en el consentimiento que otorgás al enviar tus datos
+            a través del sitio, en la ejecución de la relación que te vincula con la Organización y en
+            el cumplimiento de obligaciones legales aplicables. Podés retirar tu consentimiento en
+            cualquier momento, sin que ello afecte la licitud del tratamiento previo.
+          </p>
+
+          <h2>5. Conservación de los datos</h2>
+          <p>
+            Los datos personales se conservan durante el tiempo necesario para cumplir las finalidades
+            indicadas y las obligaciones legales correspondientes. Una vez cumplidas, los datos son
+            eliminados o anonimizados de forma segura.
+          </p>
+
+          <h2>6. Con quién se comparten los datos</h2>
+          <p>
+            La Organización <strong>no vende ni cede</strong> tus datos personales a terceros con fines
+            comerciales. Los datos pueden ser tratados por proveedores de servicios tecnológicos que
+            actúan por cuenta y bajo instrucciones de la Organización (encargados del tratamiento),
+            únicamente para el funcionamiento y mantenimiento del sitio.
+          </p>
+
+          <h2>7. Proveedor tecnológico</h2>
+          <p>
+            Este sitio fue desarrollado y es mantenido técnicamente por {PROVEEDOR.nombre}, en calidad de
+            <strong> {PROVEEDOR.rol}</strong>. {PROVEEDOR.nombre} interviene exclusivamente como soporte
+            técnico y <strong>no es el responsable ni el propietario de los datos personales</strong>: trata
+            los datos por cuenta de la Organización, siguiendo sus instrucciones y aplicando medidas de
+            seguridad, sin utilizarlos para fines propios.
+          </p>
+
+          <h2>8. Seguridad</h2>
+          <p>
+            Se aplican medidas técnicas y organizativas razonables para proteger los datos personales
+            frente a accesos no autorizados, pérdida, alteración o divulgación indebida.
+          </p>
+
+          <h2>9. Derechos de los titulares</h2>
+          <p>
+            Como titular de los datos, tenés derecho a acceder, rectificar y solicitar la supresión de tus
+            datos personales, así como a oponerte o limitar su tratamiento. Para ejercer estos derechos,
+            podés comunicarte con la Organización a través del correo {dato(E.email)} o de los datos de
+            contacto indicados en esta política.
+          </p>
+
+          <h2>10. Cookies y tecnologías similares</h2>
+          <p>
+            El sitio puede utilizar cookies o tecnologías equivalentes estrictamente necesarias para su
+            correcto funcionamiento. Podés configurar tu navegador para bloquearlas, teniendo en cuenta
+            que algunas funciones del sitio podrían verse afectadas.
+          </p>
+
+          <h2>11. Cambios en esta política</h2>
+          <p>
+            Esta Política de Privacidad puede ser actualizada en cualquier momento. La versión vigente
+            será siempre la publicada en esta página, indicando la fecha de última actualización.
+          </p>
+
+          <h2>12. Contacto</h2>
+          <p>
+            Ante cualquier consulta sobre esta política o sobre el tratamiento de tus datos personales,
+            podés escribir a {dato(E.email)} o comunicarte con {dato(E.nombre)} a través de los datos de
+            contacto indicados más arriba.
+          </p>
+        </div>
+      </main>
+    </>
+  );
+}
+
 /* ============================================================== */
 /*                              APP                                */
 /* ============================================================== */
@@ -1568,6 +1705,7 @@ function App(){
     case ROUTES.GAL: page = <GaleriaIndexPage/>; break;
     case "galeria-album": page = <GaleriaAlbumPage slug={route.slug}/>; break;
     case ROUTES.CONT: page = <ContactoPage/>; break;
+    case ROUTES.PRIV: page = <PrivacidadPage/>; break;
     default:
       page = (<>
         <PageHead crumbs={[{label:"Inicio", href:ROUTES.HOME},{label:"No encontrado"}]} title="Página no encontrada"

@@ -591,7 +591,9 @@ button{ font-family:inherit; cursor:pointer; }
 .fcol a{ display:block; font-size:14px; color:#aab4c5; padding:6px 0; transition:color .2s, padding-left .2s; }
 .fcol a:hover{ color:#fff; padding-left:5px; }
 .footer-bar{ border-top:1px solid rgba(255,255,255,.08); }
-.footer-bar-in{ display:flex; align-items:center; justify-content:space-between; padding:20px 32px; font-size:12.5px; color:#7d8aa0; letter-spacing:.02em; }
+.footer-bar-in{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:20px 32px; font-size:12.5px; color:#7d8aa0; letter-spacing:.02em; }
+.fb-credit{ color:#6c7890; }
+.fb-credit strong{ color:#aab4c6; font-weight:600; }
 
 /* ===== Responsive ===== */
 @media (max-width:880px){
@@ -744,6 +746,17 @@ button{ font-family:inherit; cursor:pointer; }
 .estatutos p{ margin:0 0 1.1em; text-align:justify; text-wrap:pretty; }
 .estatutos p[align="center"]{ text-align:center; margin:1.5em 0 1em; }
 .estatutos strong{ color:var(--ink); font-weight:600; }
+
+/* Páginas legales (Política de Privacidad, etc.) */
+.legal{ font-size:15.5px; line-height:1.72; color:var(--ink-soft); max-width:800px; margin:0 auto; }
+.legal p{ margin:0 0 1.05em; text-wrap:pretty; }
+.legal strong{ color:var(--ink); font-weight:600; }
+.legal h2{ font-family:var(--title-font); font-size:19px; font-weight:600; color:var(--ink); margin:1.7em 0 .55em; }
+.legal-updated{ font-size:13px; color:var(--muted); margin-bottom:1.6em; }
+.legal-list{ margin:0 0 1.2em; padding-left:1.2em; }
+.legal-list li{ margin:0 0 .5em; }
+.legal-lbl{ font-weight:600; color:var(--ink); margin-right:4px; }
+.legal-todo{ color:var(--accent); font-style:italic; font-size:.92em; }
 
 /* ===== Grid de cards (expresidentes, álbumes) ===== */
 .grid-cards{ display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:22px; }
