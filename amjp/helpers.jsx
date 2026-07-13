@@ -13,6 +13,14 @@ function anio(d){ return parseISO(d).getUTCFullYear(); }
 
 function norm(s){ return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
 
+// Elige el primer p\u00e1rrafo "sustancial" del cuerpo para usar como resumen,
+// saltando etiquetas cortas tipo "Tema N\u00b01:" que no aportan como bajada.
+function pickSummary(body){
+  if (!body || !body.length) return "";
+  const isLabel = (s)=> s.length < 40 && /:\s*$/.test(s.trim());
+  return body.find(p => p && p.trim() && !isLabel(p)) || body[0] || "";
+}
+
 // Categorías (orden = prioridad). Colores muy desaturados, comparten tono sobrio.
 const CATS = {
   Deportes:       { color:"#4f7a5a", label:"Deportes",      ph:"Actividad deportiva" },
@@ -45,31 +53,56 @@ function categorize(t){
 
 // Imagen destacada: foto real si existe, fallback a placeholder con rayas.
 // fit="cover" (default) | "contain" — con fondo borroso de la misma foto.
-function Placeholder({ cat, label, ratio, className, src, position, fit }){
+// Si la foto es vertical o casi cuadrada (ej. tapa de revista, o foto donde el sujeto
+// no está centrado) y la caja es horizontal, se pasa automáticamente a "contain" con
+// fondo borroso para no recortar el contenido principal.
+function Placeholder({ cat, label, ratio, className, src, position, fit, onNaturalSize }){
   const c = CATS[cat] || CATS.Institucional;
   const txt = label || (c.ph + "").toUpperCase();
   const style = { aspectRatio: ratio || "16 / 10" };
-  if (src){
-    const useContain = fit === "contain";
+  const [broken, setBroken] = React.useState(false);
+  const [autoContain, setAutoContain] = React.useState(false);
+  const imgRef = React.useRef(null);
+
+  const processSize = (w, h)=>{
+    if (onNaturalSize) onNaturalSize(w, h);
+    if (fit !== "contain" && h > w * 0.9) setAutoContain(true);
+  };
+
+  // Si la imagen ya estaba en caché del navegador, el evento onLoad puede no dispararse
+  // (queda "complete" antes de que React termine de montar el listener). Lo verificamos
+  // manualmente al montar para no perder la detección de tamaño en ese caso.
+  React.useEffect(()=>{
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) processSize(img.naturalWidth, img.naturalHeight);
+  }, [src]);
+
+  if (src && !broken){
+    const useContain = fit === "contain" || autoContain;
+    const handleLoad = (e)=>{
+      const img = e.currentTarget;
+      processSize(img.naturalWidth, img.naturalHeight);
+    };
     return (
       <div className={"ph ph--photo " + (useContain ? "ph--contain " : "") + (className||"")}
         style={useContain ? { ...style, ["--ph-bg"]: `url("${src}")` } : style}
         aria-hidden="true">
         {useContain && <div className="ph-blur"></div>}
-        <img src={src} alt="" loading="lazy"
+        <img ref={imgRef} src={src} alt="" loading="lazy" onLoad={handleLoad}
           style={{ width:"100%", height:"100%", objectFit: useContain ? "contain" : "cover",
             objectPosition: position || "center", display:"block",
             position: useContain ? "relative" : "static", zIndex: useContain ? 1 : "auto" }}
-          onError={(e)=>{ e.currentTarget.style.display="none"; e.currentTarget.parentElement.classList.add("ph--fallback"); }}
+          onError={()=> setBroken(true)}
         />
       </div>
     );
   }
+  // Sin foto, o la foto no pudo cargarse: placeholder con rayas y etiqueta de categoría.
   return (
     <div className={"ph " + (className||"")} style={style} aria-hidden="true">
       <div className="ph-stripes"></div>
       <div className="ph-grad" style={{ background:`linear-gradient(135deg, ${c.color}22, transparent 60%)` }}></div>
-      <span className="ph-tag">{txt}</span>
+      <span className="ph-tag">{broken ? "Imagen no disponible" : txt}</span>
     </div>
   );
 }

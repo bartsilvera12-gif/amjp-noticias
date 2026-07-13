@@ -13,9 +13,16 @@ data-*.json
 .DS_Store
 Thumbs.db
 
-# Dependencias (no usamos package.json, solo http-server vía npx)
+# Dependencias
 node_modules/
-package-lock.json
+
+# Panel de administración: base de datos y secretos (no versionar)
+server/data/*.db
+server/data/*.db-*
+.env
+
+# Videos de lecciones subidos al Aula Virtual (archivos grandes, autoalojados)
+uploads/videos/
 
 # Editor
 .vscode/

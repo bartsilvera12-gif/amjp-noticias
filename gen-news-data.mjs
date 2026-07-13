@@ -1,24 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
+import { decode } from "./lib/decode-entities.mjs";
 const ROOT = "C:/NEURA/Asociacion de Magistrados Judiciales del paraguay";
 const items = JSON.parse(fs.readFileSync(path.join(ROOT, "manifest.json"), "utf8"));
 const bodies = JSON.parse(fs.readFileSync(path.join(ROOT, "bodies.json"), "utf8"));
 
-// Decoder de entidades HTML que el scrape original no convirtió.
-const ENT = {
-  "&ndash;":"–","&mdash;":"—","&ldquo;":"“","&rdquo;":"”","&lsquo;":"‘","&rsquo;":"’",
-  "&hellip;":"…","&deg;":"°","&ordm;":"º","&ordf;":"ª","&middot;":"·",
-  "&laquo;":"«","&raquo;":"»","&iquest;":"¿","&iexcl;":"¡",
-  "&ccedil;":"ç","&Ccedil;":"Ç","&atilde;":"ã","&Atilde;":"Ã",
-  "&otilde;":"õ","&Otilde;":"Õ","&euro;":"€",
-  "&aacute;":"á","&eacute;":"é","&iacute;":"í","&oacute;":"ó","&uacute;":"ú",
-  "&Aacute;":"Á","&Eacute;":"É","&Iacute;":"Í","&Oacute;":"Ó","&Uacute;":"Ú",
-  "&ntilde;":"ñ","&Ntilde;":"Ñ","&uuml;":"ü","&Uuml;":"Ü",
-  "&amp;":"&","&quot;":'"',"&apos;":"'","&nbsp;":" ",
-};
-const decode = s => typeof s === "string"
-  ? s.replace(/&[a-zA-Z]+;/g, m => ENT[m] || m).replace(/&#(\d+);/g, (_,n)=>String.fromCharCode(+n))
-  : s;
 items.forEach(it => { it.t = decode(it.t); });
 for (const id of Object.keys(bodies)){ bodies[id] = bodies[id].map(decode); }
 

@@ -1,0 +1,17 @@
+{
+  "name": "amjp-sitio",
+  "version": "1.0.0",
+  "description": "Sitio y panel de administración de la Asociación de Magistrados Judiciales del Paraguay",
+  "main": "server/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server/server.js",
+    "migrate": "node migrate-to-db.mjs"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "multer": "^2.2.0"
+  }
+}

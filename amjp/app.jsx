@@ -17,6 +17,7 @@ const ROUTES = {
   EXPRES: "/asociacion/galeria-de-expresidentes",
   RESOL: "/resoluciones",
   CURSOS: "/socios/cursos",
+  AULA: "/socios/aula-virtual",
   EVENTOS: "/socios/eventos",
   DEPORTES: "/socios/deportes",
   BENEF: "/socios/beneficios",
@@ -55,6 +56,7 @@ const NAV = [
   ]},
   { label:"Resoluciones", href: ROUTES.RESOL },
   { label:"Socios", children:[
+    ["Aula Virtual", ROUTES.AULA],
     ["Cursos", ROUTES.CURSOS],
     ["Eventos", ROUTES.EVENTOS],
     ["Deportes", ROUTES.DEPORTES],
@@ -217,7 +219,7 @@ function Chip({ cat, sm }){
 
 /* ---------- Portada — carrusel auto (estilo Agenda Legal) ---------- */
 function PortadaSlide({ item, kicker, onOpen, active }){
-  const summary = (item.body && item.body[0]) ? item.body[0] : "";
+  const summary = pickSummary(item.body);
   const truncated = summary.length > 240 ? summary.slice(0, 240).replace(/\s+\S*$/,"") + "…" : summary;
   return (
     <article className={"portada-card" + (active ? " is-on" : "")}
@@ -302,6 +304,7 @@ function Portada({ items, onOpen, kicker, autoMs }){
 
 /* ---------- Destacadas ---------- */
 function Featured({ items, photos, onOpen, label }){
+  const [mainHq, setMainHq] = useState(true);
   if (!items.length) return null;
   const [main, ...side] = items;
   return (
@@ -312,8 +315,9 @@ function Featured({ items, photos, onOpen, label }){
           <span className="sec-rule"></span>
         </div>
         <div className="featured-grid">
-          <article className="feat feat--main" onClick={()=>onOpen(main)}>
-            {photos && <Placeholder cat={main.cat} ratio="16 / 9" className="feat-img" src={main.img}/>}
+          <article className={"feat feat--main"+(mainHq?"":" feat--main-lowres")} onClick={()=>onOpen(main)}>
+            {photos && <Placeholder cat={main.cat} ratio="16 / 9" className="feat-img" src={main.img}
+              onNaturalSize={(w)=>{ if (w < 700) setMainHq(false); }}/>}
             <div className="feat-body">
               <div className="feat-meta">{main.cat && <Chip cat={main.cat}/>}<span className="meta-date">{fechaLarga(main.d)}</span></div>
               <h3 className="feat-title">{main.t}</h3>
@@ -488,21 +492,37 @@ function SearchOverlay({ open, onClose, q, setQ, resultCount }){
 
 function FilterBar({ q, setQ, year, setYear, cat, setCat, years, cats, resultCount, filtering }){
   const [compact, setCompact] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const compactRef = useRef(false);
   const sentinelRef = useRef(null);
   useEffect(()=>{
     const sen = sentinelRef.current;
     if (!sen || typeof IntersectionObserver === "undefined") return;
     const io = new IntersectionObserver(
-      ([e])=> setCompact(!e.isIntersecting && e.boundingClientRect.top < 0),
+      ([e])=>{ const c = !e.isIntersecting && e.boundingClientRect.top < 0; compactRef.current = c; setCompact(c); },
       { rootMargin:"-72px 0px 0px 0px", threshold:0 }
     );
     io.observe(sen);
     return ()=> io.disconnect();
   }, []);
+  // Ocultar al desplazarse hacia abajo (y volver a mostrar al subir), solo cuando
+  // la barra ya está pegada arriba, para que no salte estando en medio de la página.
+  useEffect(()=>{
+    let last = window.scrollY;
+    const onScroll = ()=>{
+      const y = window.scrollY;
+      if (Math.abs(y - last) < 6) return;
+      if (!compactRef.current) { setHidden(false); last = y; return; }
+      setHidden(y > last);
+      last = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive:true });
+    return ()=> window.removeEventListener("scroll", onScroll);
+  }, []);
   return (
     <>
       <div ref={sentinelRef} className="filterbar-sentinel" aria-hidden="true"></div>
-    <div className={"filterbar" + (compact ? " is-compact" : "")}>
+    <div className={"filterbar" + (compact ? " is-compact" : "") + (hidden ? " is-hidden" : "")}>
       <div className="wrap filterbar-in">
         <div className="fb-row">
           <div className="search">
@@ -552,16 +572,22 @@ function NewsRow({ item, onOpen }){
 }
 
 /* ---------- Card de noticia (estilo Agenda Legal) ---------- */
-function NewsCard({ item, onOpen }){
-  const summary = (item.body && item.body[0]) ? item.body[0] : "";
-  const truncated = summary.length > 160 ? summary.slice(0, 160).replace(/\s+\S*$/,"") + "…" : summary;
+// big=true agranda la card (nota más reciente del año). Si la foto es de baja resolución
+// (más chica que la caja grande), se evita agrandarla para no verse borrosa/estirada.
+function NewsCard({ item, onOpen, big }){
+  const [hq, setHq] = useState(true);
+  const showBig = big && hq;
+  const summary = pickSummary(item.body);
+  const cap = showBig ? 260 : 160;
+  const truncated = summary.length > cap ? summary.slice(0, cap).replace(/\s+\S*$/,"") + "…" : summary;
   return (
-    <article className="ac" onClick={()=>onOpen(item)}>
+    <article className={"ac"+(showBig?" ac--lead":"")} onClick={()=>onOpen(item)}>
       <div className="ac-img">
-        <Placeholder cat={item.cat} ratio="16 / 10" src={item.img}/>
+        <Placeholder cat={item.cat} ratio={showBig?"21 / 9":"16 / 10"} src={item.img}
+          onNaturalSize={big ? (w)=>{ if (w < 700) setHq(false); } : undefined}/>
+        {item.cat && <span className="ac-badge" style={{ background: CATS[item.cat].color }}>{CATS[item.cat].label}</span>}
       </div>
       <div className="ac-body">
-        {item.cat && <Chip cat={item.cat} sm/>}
         <h3 className="ac-title">{item.t}</h3>
         {truncated && <p className="ac-sum">{truncated}</p>}
         <div className="ac-foot">
@@ -602,12 +628,18 @@ function NewsList({ items, onOpen, grouped, mode }){
   });
   return (
     <div className="ac-groups">
-      {groups.map(g => (
-        <section className="ac-group" key={g.y}>
-          <div className="year-div"><span className="yd-num">{g.y}</span><span className="yd-line"></span></div>
-          <div className="ac-grid">{g.items.map(it => <NewsCard key={it.id} item={it} onOpen={onOpen}/>)}</div>
-        </section>
-      ))}
+      {groups.map(g => {
+        const [yearLead, ...yearRest] = g.items;
+        return (
+          <section className="ac-group" key={g.y}>
+            <div className="year-div"><span className="yd-num">{g.y}</span><span className="yd-line"></span></div>
+            <div className="ac-year-layout">
+              {yearLead && <NewsCard item={yearLead} onOpen={onOpen} big/>}
+              {yearRest.length > 0 && <div className="ac-grid">{yearRest.map(it => <NewsCard key={it.id} item={it} onOpen={onOpen}/>)}</div>}
+            </div>
+          </section>
+        );
+      })}
     </div>
   );
 }
@@ -781,6 +813,8 @@ function ConveniosBody({ sections }){
 
 /* ---------- Modal de lectura ---------- */
 function ArticleModal({ item, onClose, onPrev, onNext, hasPrev, hasNext }){
+  const [imgHq, setImgHq] = useState(true);
+  useEffect(()=>{ setImgHq(true); }, [item]);
   useEffect(()=>{
     function k(e){
       if (e.key==="Escape") onClose();
@@ -801,7 +835,8 @@ function ArticleModal({ item, onClose, onPrev, onNext, hasPrev, hasNext }){
             <div className="art-meta">{item.cat && <Chip cat={item.cat}/>}<span className="meta-date"><Icon.clock className="md-ic"/>{diaSemana(item.d)}, {fechaLarga(item.d)}</span></div>
             <h1 className="art-title">{item.t}</h1>
             <div className="art-byline">Prensa AMJP · Asociación de Magistrados Judiciales del Paraguay</div>
-            <Placeholder cat={item.cat} ratio="16 / 9" className="art-img" src={item.img} fit="contain"/>
+            <Placeholder cat={item.cat} ratio="16 / 9" className={"art-img"+(imgHq?"":" art-img--lowres")} src={item.img} fit="contain"
+              onNaturalSize={(w)=>{ if (w < 700) setImgHq(false); }}/>
             {(() => {
               if (!item.body || !item.body.length) return (
                 <div className="art-note">
@@ -948,6 +983,129 @@ function NoticiasPage({ photos }){
           </div>
         )}
       </main>
+      {selItem && (
+        <ArticleModal item={selItem} onClose={()=>setSel(null)}
+          onPrev={()=>setSel(s=>Math.max(0,s-1))} onNext={()=>setSel(s=>Math.min(news.length-1,s+1))}
+          hasPrev={sel>0} hasNext={sel<news.length-1}/>
+      )}
+    </>
+  );
+}
+
+/* ---------- Home (portada estilo periódico) ---------- */
+const HERO_ALBUMS = ["Casa del Magistrado", "Sede Social", "Sede Central"];
+const stripHtml = (s)=> (s||"").replace(/<br\s*\/?>/gi, " ").replace(/\s+/g," ").trim();
+
+function HcIconPlay(p){ return (<svg viewBox="0 0 24 24" fill="none" {...p}><path d="M7 4.5v15l13-7.5-13-7.5Z" fill="currentColor"/></svg>); }
+function HcIconPause(p){ return (<svg viewBox="0 0 24 24" fill="none" {...p}><rect x="6" y="4.5" width="4.5" height="15" rx="1" fill="currentColor"/><rect x="13.5" y="4.5" width="4.5" height="15" rx="1" fill="currentColor"/></svg>); }
+function HcIconExpand(p){ return (<svg viewBox="0 0 24 24" fill="none" {...p}><path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>); }
+
+/* ---------- Carrusel de portada (sede/edificio) ---------- */
+function HomeHeroCarousel(){
+  const photos = useMemo(()=>{
+    const albums = window.GALERIA || [];
+    const out = [];
+    HERO_ALBUMS.forEach(name=>{
+      const alb = albums.find(a=>a.title===name);
+      if (!alb) return;
+      (alb.photos||[]).forEach(p=> out.push({ ...p, album: alb.title }));
+    });
+    return out;
+  }, []);
+  const [slide, setSlide] = useState(0);
+  const [playing, setPlaying] = useState(true);
+  const [lbOpen, setLbOpen] = useState(false);
+  const n = photos.length;
+
+  useEffect(()=>{
+    if (!playing || n < 2) return;
+    const t = setInterval(()=> setSlide(s=>(s+1)%n), 4500);
+    return ()=> clearInterval(t);
+  }, [playing, n]);
+
+  if (!n) return null;
+  const goto = (i)=>{ setPlaying(false); setSlide(((i%n)+n)%n); };
+  const cur = photos[slide];
+
+  return (
+    <section className="hero-carousel">
+      <div className="wrap">
+        <div className="hc-stage">
+          <div className="hc-photo">
+            <Placeholder cat="Institucional" ratio="auto" src={cur.big} fit="contain"/>
+            {n > 1 && (
+              <>
+                <button type="button" className="hc-nav hc-prev" onClick={()=>goto(slide-1)} aria-label="Anterior"><Icon.arrow/></button>
+                <button type="button" className="hc-nav hc-next" onClick={()=>goto(slide+1)} aria-label="Siguiente"><Icon.arrow/></button>
+              </>
+            )}
+          </div>
+          <div className="hc-text">
+            <span className="hc-kicker">Nuestra sede</span>
+            <h2 className="hc-title">{cur.album}</h2>
+            <p className="hc-caption">{stripHtml(cur.caption) || "Casa del Magistrado — sede de la Asociación de Magistrados Judiciales del Paraguay."}</p>
+            <div className="hc-controls">
+              <button type="button" className="hc-ctrl" onClick={()=>setPlaying(p=>!p)} aria-label={playing?"Pausar":"Reproducir"}>
+                {playing ? <HcIconPause/> : <HcIconPlay/>}
+              </button>
+              <button type="button" className="hc-ctrl" onClick={()=>setLbOpen(true)} aria-label="Ver en grande"><HcIconExpand/></button>
+              {n > 1 && <span className="hc-count">{slide+1} / {n}</span>}
+            </div>
+          </div>
+        </div>
+      </div>
+      {lbOpen && (
+        <Lightbox items={photos} index={slide} onClose={()=>setLbOpen(false)} onNav={goto}
+          renderCaption={p=>stripHtml(p.caption) || p.album}/>
+      )}
+    </section>
+  );
+}
+
+const HOME_SECTIONS = ["Institucional", "Capacitación", "Gremial", "Internacional", "Deportes"];
+
+function HomePage({ photos }){
+  const news = useMemo(()=> window.NEWS.map(n=>({ ...n, cat: categorize(n.t) })), []);
+  const [sel, setSel] = useState(null);
+  const openItem = (item)=> setSel(news.findIndex(n=>n.id===item.id));
+  const selItem = sel==null ? null : news[sel];
+
+  const hero = news.slice(0, 6);
+  const sections = useMemo(()=>{
+    const used = new Set(hero.map(n=>n.id));
+    return HOME_SECTIONS.map(cat=>({
+      cat,
+      items: news.filter(n=>n.cat===cat && !used.has(n.id)).slice(0, 3),
+    })).filter(s=>s.items.length>0);
+  }, [news]);
+
+  return (
+    <>
+      <Featured items={hero} photos={photos} onOpen={openItem} label="Lo último"/>
+
+      <HomeHeroCarousel/>
+
+      {sections.map((s, i)=>(
+        <Fragment key={s.cat}>
+          <SectionDivider/>
+          <section className="home-section">
+            <div className="wrap">
+              <div className="sec-head">
+                <h2 className="sec-title">{CATS[s.cat]?.label || s.cat}</h2>
+                <span className="sec-rule"></span>
+              </div>
+              <div className="ac-grid">
+                {s.items.map(it => <NewsCard key={it.id} item={it} onOpen={openItem}/>)}
+              </div>
+            </div>
+          </section>
+        </Fragment>
+      ))}
+
+      <main className="wrap front-main">
+        <a className="front-more" href={link(ROUTES.NOTICIAS)}>Ver todas las noticias<Icon.arrow/></a>
+      </main>
+
       {selItem && (
         <ArticleModal item={selItem} onClose={()=>setSel(null)}
           onPrev={()=>setSel(s=>Math.max(0,s-1))} onNext={()=>setSel(s=>Math.min(news.length-1,s+1))}
@@ -1158,11 +1316,7 @@ function GaleriaAlbumPage({ slug }){
 
 /* ---------- Beneficios (página índice con enlaces a sub-servicios) ---------- */
 function BeneficiosPage(){
-  const links = [
-    ["Créditos", ROUTES.CREDITOS, "Solicitud de préstamos para asociados con condiciones preferenciales."],
-    ["Órdenes de compra", null, "Acceso a una red de comercios aliados mediante órdenes mensuales."],
-    ["Solicitudes de descuento", null, "Convenios con comercios, profesionales y servicios."],
-  ];
+  const items = window.BENEFICIOS || [];
   return (
     <>
       <PageHead crumbs={[{label:"Inicio", href:ROUTES.HOME},{label:"Socios"},{label:"Beneficios"}]}
@@ -1170,17 +1324,20 @@ function BeneficiosPage(){
         sub="A través de la A.M.J.P. los asociados acceden a una variedad de beneficios."/>
       <main className="wrap main">
         <div className="benef-grid">
-          {links.map(([t, href, desc], i)=>(
-            href
-              ? <a className="benef-card" key={i} href={link(href)}>
-                  <h3>{t}</h3><p>{desc}</p>
+          {items.map((b)=>{
+            const isExternal = b.href && /^https?:\/\//i.test(b.href);
+            const isActive = b.active && b.href;
+            return isActive
+              ? <a className="benef-card" key={b.id} href={isExternal ? b.href : link(b.href)}
+                  target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined}>
+                  <h3>{b.title}</h3><p>{b.desc}</p>
                   <span className="benef-cta">Solicitar <Icon.arrow/></span>
                 </a>
-              : <div className="benef-card benef-card--off" key={i}>
-                  <h3>{t}</h3><p>{desc}</p>
+              : <div className="benef-card benef-card--off" key={b.id}>
+                  <h3>{b.title}</h3><p>{b.desc}</p>
                   <span className="benef-cta benef-cta--off">Próximamente</span>
-                </div>
-          ))}
+                </div>;
+          })}
         </div>
       </main>
     </>
@@ -1191,13 +1348,26 @@ function BeneficiosPage(){
 function ContactForm({ title, crumbs, sub, fields, hidden, intro, kind }){
   const [vals, setVals] = useState(Object.fromEntries(fields.map(f=>[f.name, ""])));
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
   const [err, setErr] = useState("");
-  function submit(e){
+  async function submit(e){
     e.preventDefault();
     const missing = fields.filter(f => f.required !== false && !String(vals[f.name]||"").trim()).map(f=>f.label);
     if (missing.length){ setErr("Faltan completar: " + missing.join(", ")); return; }
-    setErr("");
-    setSent(true);
+    setErr(""); setSending(true);
+    try {
+      const res = await fetch("/api/public/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: hidden, data: vals }),
+      });
+      if (!res.ok) throw new Error("No se pudo enviar. Probá de nuevo en unos minutos.");
+      setSent(true);
+    } catch (e2){
+      setErr(e2.message);
+    } finally {
+      setSending(false);
+    }
   }
   return (
     <>
@@ -1225,7 +1395,9 @@ function ContactForm({ title, crumbs, sub, fields, hidden, intro, kind }){
               ))}
               {hidden && <div className="form-hidden-meta">Tipo de solicitud: <strong>{hidden}</strong></div>}
               {err && <div className="form-err">{err}</div>}
-              <button type="submit" className="form-btn">Enviar solicitud <Icon.arrow/></button>
+              <button type="submit" className="form-btn" disabled={sending}>
+                {sending ? "Enviando…" : <>Enviar solicitud <Icon.arrow/></>}
+              </button>
             </form>
           )}
         </div>
@@ -1357,6 +1529,7 @@ function App(){
   let page;
   switch (route.name){
     case "/":
+      page = <HomePage photos={t.photos}/>; break;
     case "/noticias":
       page = <NoticiasPage photos={t.photos}/>; break;
     case ROUTES.RESOL:
@@ -1371,6 +1544,8 @@ function App(){
         crumbs={[{label:"Inicio", href:ROUTES.HOME},{label:"Socios"},{label:"Cursos"}]}
         sub="Capacitación continua para magistrados, fiscales y defensores."
         defaultCat="Capacitación"/>; break;
+    case ROUTES.AULA:
+      page = <AulaVirtualPage/>; break;
     case ROUTES.EVENTOS:
       page = <SectionList items={window.EVENTOS} photos={t.photos}
         title="Eventos" kicker="Evento destacado"
