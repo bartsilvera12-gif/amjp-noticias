@@ -1,7 +1,7 @@
 // Autenticación simple (usuario/contraseña compartida) para el panel de administración.
 // Hash de contraseña con scrypt (node:crypto, sin dependencias nativas de terceros).
 import crypto from "node:crypto";
-import session from "express-session";
+import cookieSession from "cookie-session";
 import express from "express";
 import { db } from "./db.js";
 
@@ -21,11 +21,13 @@ export function verifyPassword(password, stored){
 }
 
 export function sessionMiddleware(){
-  return session({
-    secret: process.env.SESSION_SECRET || "amjp-dev-secret-cambiar-en-produccion",
-    resave: false,
-    saveUninitialized: false,
-    cookie: { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 }, // 7 días
+  // Sesión basada en cookie firmada (sin store en memoria): funciona en serverless (Vercel).
+  return cookieSession({
+    name: "amjp_sess",
+    keys: [process.env.SESSION_SECRET || "amjp-dev-secret-cambiar-en-produccion"],
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 días
   });
 }
 
@@ -49,7 +51,8 @@ authRouter.post("/login", express.json(), (req, res) => {
 });
 
 authRouter.post("/logout", (req, res) => {
-  req.session.destroy(() => res.json({ ok: true }));
+  if (req.session){ req.session.userId = null; req.session.username = null; }
+  res.json({ ok: true });
 });
 
 authRouter.get("/me", (req, res) => {
