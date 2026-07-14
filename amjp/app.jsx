@@ -1100,6 +1100,25 @@ function HomePage({ photos }){
     })).filter(s=>s.items.length>0);
   }, [news]);
 
+  // "Más noticias": el resto de las publicaciones, con scroll infinito (cargan solas al bajar).
+  const [visible, setVisible] = useState(18);
+  const rest = useMemo(()=>{
+    const used = new Set(hero.map(n=>n.id));
+    sections.forEach(sec => sec.items.forEach(it => used.add(it.id)));
+    return news.filter(n => !used.has(n.id));
+  }, [news, sections]);
+  const shownRest = rest.slice(0, visible);
+  const hasMore = shownRest.length < rest.length;
+  useEffect(()=>{
+    if (!hasMore) return;
+    const onScroll = ()=>{
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 700) setVisible(v => v + 18);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return ()=> window.removeEventListener("scroll", onScroll);
+  }, [hasMore]);
+
   return (
     <>
       <Featured items={hero} photos={photos} onOpen={openItem} label="Lo último"/>
@@ -1123,11 +1142,20 @@ function HomePage({ photos }){
         </Fragment>
       ))}
 
-      {/* Botón "Ver todas las noticias" ocultado a pedido:
-      <main className="wrap front-main">
-        <a className="front-more" href={link(ROUTES.NOTICIAS)}>Ver todas las noticias<Icon.arrow/></a>
-      </main>
-      */}
+      {rest.length > 0 && (
+        <>
+          <SectionDivider/>
+          <main className="wrap main">
+            <div className="sec-head sec-head--list"><h2 className="sec-title">Más noticias</h2><span className="sec-rule"></span></div>
+            <NewsList items={shownRest} onOpen={openItem} grouped={true}/>
+            {hasMore && (
+              <div className="loadmore-wrap">
+                <span className="loadmore-auto"><span className="lm-dot"></span>Cargando más noticias<span className="lm-count">{shownRest.length} de {rest.length}</span></span>
+              </div>
+            )}
+          </main>
+        </>
+      )}
 
       {selItem && (
         <ArticleModal item={selItem} onClose={()=>setSel(null)}
