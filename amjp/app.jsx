@@ -105,11 +105,7 @@ function TopBar({ dark, onToggleDark }){
       <div className="wrap topbar-in">
         {/* <span className="topbar-tag">Casa del Magistrado · Asunción, Paraguay</span> */}
         <nav className="topbar-links">
-          <a href={link(ROUTES.ACTU)}>Acceso socios</a>
-          <span className="dot">·</span>
-          <a href={link(ROUTES.INSCR)}>Inscripción</a>
-          <span className="dot">·</span>
-          <a href={link(ROUTES.CONT)}>Contacto</a>
+          {/* Enlaces ocultos a pedido: Acceso socios · Inscripción · Contacto */}
           <button type="button" className={"theme-toggle" + (dark ? " is-dark" : "")}
             onClick={onToggleDark}
             aria-label={dark ? "Activar modo claro" : "Activar modo oscuro"}
