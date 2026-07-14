@@ -17,6 +17,7 @@ const ROUTES = {
   EXPRES: "/asociacion/galeria-de-expresidentes",
   RESOL: "/resoluciones",
   CURSOS: "/socios/cursos",
+  INSCR_CURSO: "/socios/inscripcion-a-curso",
   AULA: "/socios/aula-virtual",
   EVENTOS: "/socios/eventos",
   DEPORTES: "/socios/deportes",
@@ -59,6 +60,7 @@ const NAV = [
   { label:"Socios", children:[
     ["Aula Virtual", ROUTES.AULA],
     ["Cursos", ROUTES.CURSOS],
+    ["Inscripción a cursos", ROUTES.INSCR_CURSO],
     ["Eventos", ROUTES.EVENTOS],
     ["Deportes", ROUTES.DEPORTES],
     ["Beneficios", ROUTES.BENEF],
@@ -1119,7 +1121,7 @@ function HomePage({ photos }){
 }
 
 /* ---------- Lista genérica (Resoluciones/Cursos/Eventos/Deportes) ---------- */
-function SectionList({ items, photos, title, kicker, crumbs, sub, defaultCat, flat }){
+function SectionList({ items, photos, title, kicker, crumbs, sub, defaultCat, flat, cta }){
   const enriched = useMemo(()=> items.map(n=>({ ...n, cat: n.cat || defaultCat || categorize(n.t) })), [items, defaultCat]);
   const sorted = useMemo(()=> enriched.slice().sort((a,b)=> b.d.localeCompare(a.d) || b.id-a.id), [enriched]);
   const [sel, setSel] = useState(null);
@@ -1138,6 +1140,11 @@ function SectionList({ items, photos, title, kicker, crumbs, sub, defaultCat, fl
       <>
         <PageHead crumbs={crumbs} title={title} sub={sub}/>
         <main className="wrap main">
+          {cta && (
+            <div className="list-cta">
+              <a className="list-cta-btn" href={link(cta.href)}>{cta.label} <Icon.arrow/></a>
+            </div>
+          )}
           <NewsList items={sorted} onOpen={openItem} grouped={false}/>
         </main>
         {modal}
@@ -1407,6 +1414,11 @@ function ContactForm({ title, crumbs, sub, fields, hidden, intro, kind }){
                   <span className="form-lbl">{f.label}{f.required !== false && <span className="req">*</span>}</span>
                   {f.type === "textarea"
                     ? <textarea rows={f.rows||5} placeholder={f.placeholder||""} value={vals[f.name]} onChange={e=>setVals(v=>({...v, [f.name]: e.target.value}))}/>
+                    : f.type === "select"
+                    ? <select className="form-select" value={vals[f.name]} onChange={e=>setVals(v=>({...v, [f.name]: e.target.value}))}>
+                        <option value="">{f.placeholder || "Elegí una opción…"}</option>
+                        {(f.options||[]).map(o=>{ const val = typeof o === "string" ? o : o.value; const lab = typeof o === "string" ? o : o.label; return <option key={val} value={val}>{lab}</option>; })}
+                      </select>
                     : <input type={f.type||"text"} placeholder={f.placeholder||""} value={vals[f.name]} onChange={e=>setVals(v=>({...v, [f.name]: e.target.value}))}/>
                   }
                 </label>
@@ -1443,6 +1455,95 @@ function InscripcionPage(){
       {name:"phone", label:"Teléfono"},
       {name:"mobile", label:"Celular"},
     ]}/>;
+}
+
+function InscripcionCursoPage(){
+  const cursos = useMemo(()=> (window.CURSOS||[]).slice().sort((a,b)=> b.d.localeCompare(a.d) || b.id-a.id), []);
+  const [vals, setVals] = useState({ course_id:"", name:"", cedula:"", email:"" });
+  const [sending, setSending] = useState(false);
+  const [err, setErr] = useState("");
+  const [done, setDone] = useState(null); // {course, cedula, email}
+
+  const preselect = useMemo(()=>{
+    const m = (location.hash||"").match(/[?&]curso=(\d+)/);
+    return m ? m[1] : "";
+  }, []);
+  useEffect(()=>{ if (preselect) setVals(v=>({ ...v, course_id: preselect })); }, [preselect]);
+
+  async function submit(e){
+    e.preventDefault();
+    if (!vals.course_id) return setErr("Elegí el curso al que querés inscribirte.");
+    if (!vals.name.trim() || !vals.email.trim() || !vals.cedula.trim())
+      return setErr("Completá nombre, cédula y correo.");
+    setErr(""); setSending(true);
+    try {
+      const res = await fetch("/api/public/inscripcion-curso", {
+        method:"POST", headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ course_id: Number(vals.course_id), name: vals.name, cedula: vals.cedula, email: vals.email }),
+      });
+      const data = await res.json().catch(()=>({}));
+      if (!res.ok) throw new Error(data.error || "No se pudo completar la inscripción. Probá de nuevo.");
+      setDone({ course: data.course, cedula: vals.cedula.trim(), email: vals.email.trim().toLowerCase(), already: data.already, emailed: data.emailed });
+    } catch (e2){ setErr(e2.message); }
+    finally { setSending(false); }
+  }
+
+  return (
+    <>
+      <PageHead crumbs={[{label:"Inicio",href:ROUTES.HOME},{label:"Socios"},{label:"Inscripción a cursos"}]}
+        title="Inscripción a cursos"
+        sub="Inscribite a un curso de la AMJP completando el formulario."/>
+      <main className="wrap main">
+        <div className="form-card">
+          {done ? (
+            <div className="form-sent">
+              <div className="form-sent-ic"><Icon.check/></div>
+              <h3>{done.already ? "Ya estabas inscripto" : "¡Inscripción confirmada!"}</h3>
+              <p>Quedaste inscripto en <strong>{done.course}</strong>.</p>
+              <div className="insc-access">
+                <p>Ya podés acceder al <strong>Aula Virtual</strong> para ver el curso:</p>
+                <ul>
+                  <li>Usuario: <strong>{done.email}</strong></li>
+                  <li>Contraseña: tu número de cédula (<strong>{done.cedula}</strong>)</li>
+                </ul>
+                {done.emailed && <p className="insc-mail-ok">También te enviamos estos datos por correo a {done.email}. Revisá tu bandeja de entrada (y la carpeta de spam).</p>}
+              </div>
+              <a className="form-btn" href={link(ROUTES.AULA)}>Ir al Aula Virtual <Icon.arrow/></a>
+            </div>
+          ) : (
+            <>
+              <div className="form-intro">Elegí el curso e ingresá tus datos. Al confirmar, quedás inscripto y podés entrar al Aula Virtual con tu correo y tu número de cédula.</div>
+              <form className="form" onSubmit={submit} noValidate>
+                <label className="form-row">
+                  <span className="form-lbl">Curso al que se inscribe<span className="req">*</span></span>
+                  <select className="form-select" value={vals.course_id} onChange={e=>setVals(v=>({...v, course_id:e.target.value}))}>
+                    <option value="">Elegí un curso…</option>
+                    {cursos.map(c=> <option key={c.id} value={c.id}>{c.t}</option>)}
+                  </select>
+                </label>
+                <label className="form-row">
+                  <span className="form-lbl">Nombre y apellido<span className="req">*</span></span>
+                  <input type="text" value={vals.name} onChange={e=>setVals(v=>({...v, name:e.target.value}))}/>
+                </label>
+                <label className="form-row">
+                  <span className="form-lbl">Número de cédula<span className="req">*</span></span>
+                  <input type="text" value={vals.cedula} onChange={e=>setVals(v=>({...v, cedula:e.target.value}))}/>
+                </label>
+                <label className="form-row">
+                  <span className="form-lbl">Correo electrónico<span className="req">*</span></span>
+                  <input type="email" value={vals.email} onChange={e=>setVals(v=>({...v, email:e.target.value}))}/>
+                </label>
+                {err && <div className="form-err">{err}</div>}
+                <button type="submit" className="form-btn" disabled={sending}>
+                  {sending ? "Inscribiendo…" : <>Inscribirme <Icon.arrow/></>}
+                </button>
+              </form>
+            </>
+          )}
+        </div>
+      </main>
+    </>
+  );
 }
 
 function CreditosPage(){
@@ -1692,6 +1793,7 @@ function App(){
         defaultCat="Institucional"/>; break;
     case ROUTES.CURSOS:
       page = <SectionList items={window.CURSOS} photos={t.photos} flat
+        cta={{ label:"Inscribirme a un curso", href:ROUTES.INSCR_CURSO }}
         title="Cursos" kicker="Curso destacado"
         crumbs={[{label:"Inicio", href:ROUTES.HOME},{label:"Socios"},{label:"Cursos"}]}
         sub="Capacitación continua para magistrados, fiscales y defensores."
@@ -1720,6 +1822,7 @@ function App(){
     case ROUTES.GAL: page = <GaleriaIndexPage/>; break;
     case "galeria-album": page = <GaleriaAlbumPage slug={route.slug}/>; break;
     case ROUTES.CONT: page = <ContactoPage/>; break;
+    case ROUTES.INSCR_CURSO: page = <InscripcionCursoPage/>; break;
     case ROUTES.PRIV: page = <PrivacidadPage/>; break;
     default:
       page = (<>
