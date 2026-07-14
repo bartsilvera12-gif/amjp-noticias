@@ -18,7 +18,7 @@ const SECTIONS = [
   { key: "mensajes", label: "Mensajes", enabled: true },
 ];
 
-const LOGO_SRC = "../logo-amjp.png";
+const LOGO_SRC = "/amjp/logo-amjp.png";
 
 /* ---------- Login ---------- */
 function LoginScreen({ onLoggedIn }){
