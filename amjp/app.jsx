@@ -955,6 +955,20 @@ function NoticiasPage({ photos }){
   const featured = filtering ? [] : news.slice(5, 8);
   const listSource = filtering ? filtered : news.slice(8);
   const shown = listSource.slice(0, visible);
+  const hasMore = shown.length < listSource.length;
+
+  // Scroll infinito: al acercarse al final de la página, cargar 18 más automáticamente.
+  useEffect(()=>{
+    if (!hasMore) return;
+    const onScroll = ()=>{
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 700) {
+        setVisible(v => v + 18);
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll(); // por si el fondo ya está a la vista
+    return ()=> window.removeEventListener("scroll", onScroll);
+  }, [hasMore]);
 
   const openItem = (item)=> setSel(news.findIndex(n=>n.id===item.id));
   const selItem = sel==null ? null : news[sel];
@@ -980,12 +994,13 @@ function NoticiasPage({ photos }){
             <button className="empty-reset" onClick={()=>{ setQ(""); setYear("all"); setCat("all"); }}>Limpiar filtros</button>
           </div>
         )}
-        {shown.length < listSource.length && (
+        {hasMore && (
           <div className="loadmore-wrap">
-            <button className="loadmore" onClick={()=>setVisible(v=>v+18)}>
-              Cargar más noticias
+            <span className="loadmore-auto">
+              <span className="lm-dot"></span>
+              Cargando más noticias
               <span className="lm-count">{shown.length} de {listSource.length}</span>
-            </button>
+            </span>
           </div>
         )}
       </main>
