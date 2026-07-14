@@ -4,9 +4,12 @@
   "description": "Sitio y panel de administración de la Asociación de Magistrados Judiciales del Paraguay",
   "main": "server/server.js",
   "type": "module",
+  "engines": {
+    "node": ">=22.5.0"
+  },
   "scripts": {
-    "start": "node server/server.js",
-    "migrate": "node migrate-to-db.mjs"
+    "start": "node --experimental-sqlite server/server.js",
+    "migrate": "node --experimental-sqlite migrate-to-db.mjs"
   },
   "license": "ISC",
   "dependencies": {

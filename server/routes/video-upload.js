@@ -3,12 +3,7 @@
 import express from "express";
 import multer from "multer";
 import path from "node:path";
-import fs from "node:fs";
-import { fileURLToPath } from "node:url";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const VIDEOS_DIR = path.join(__dirname, "..", "..", "uploads", "videos");
-fs.mkdirSync(VIDEOS_DIR, { recursive: true });
+import { VIDEOS_DIR } from "../paths.js";
 
 const ALLOWED = new Set([".mp4", ".webm", ".ogg", ".mov", ".m4v"]);
 

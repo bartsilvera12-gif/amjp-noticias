@@ -1,14 +1,8 @@
 // Base de datos SQLite del panel de administración (módulo nativo de Node, sin dependencias).
 import { DatabaseSync } from "node:sqlite";
-import path from "node:path";
-import fs from "node:fs";
-import { fileURLToPath } from "node:url";
+import { DATABASE_PATH } from "./paths.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.join(__dirname, "data", "amjp.db");
-fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
-
-export const db = new DatabaseSync(DB_PATH);
+export const db = new DatabaseSync(DATABASE_PATH);
 db.exec("PRAGMA foreign_keys = ON;");
 
 db.exec(`

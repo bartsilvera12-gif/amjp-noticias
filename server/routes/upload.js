@@ -3,17 +3,12 @@
 import express from "express";
 import multer from "multer";
 import path from "node:path";
-import fs from "node:fs";
-import { fileURLToPath } from "node:url";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const UPLOADS_DIR = path.join(__dirname, "..", "..", "uploads", "articulos");
-fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+import { ARTICULOS_DIR } from "../paths.js";
 
 const ALLOWED = new Set([".jpg", ".jpeg", ".png", ".gif", ".webp"]);
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, UPLOADS_DIR),
+  destination: (req, file, cb) => cb(null, ARTICULOS_DIR),
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
     const base = path.basename(file.originalname, path.extname(file.originalname))

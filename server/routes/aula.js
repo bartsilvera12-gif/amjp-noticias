@@ -2,12 +2,9 @@
 import express from "express";
 import path from "node:path";
 import fs from "node:fs";
-import { fileURLToPath } from "node:url";
 import { db } from "../db.js";
 import { requireStudent, authenticateStudent } from "../student-auth.js";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.join(__dirname, "..", "..");
+import { VIDEOS_DIR } from "../paths.js";
 
 export const aulaRouter = express.Router();
 
@@ -116,10 +113,9 @@ aulaRouter.get("/lessons/:id/video", requireStudent, (req, res) => {
   if (!lesson || !lesson.video_path) return res.status(404).json({ error: "La lección no tiene video" });
   if (!isEnrolled(sid, lesson.course_id)) return res.status(403).json({ error: "No estás matriculado en este curso" });
 
-  // Evita path traversal: solo servimos archivos dentro de uploads/videos.
-  const videosDir = path.join(ROOT, "uploads", "videos");
-  const abs = path.join(ROOT, lesson.video_path);
-  if (!abs.startsWith(videosDir) || !fs.existsSync(abs)) return res.status(404).json({ error: "Video no disponible" });
+  // Evita path traversal usando solo el nombre de archivo dentro de VIDEOS_DIR.
+  const abs = path.join(VIDEOS_DIR, path.basename(lesson.video_path));
+  if (!fs.existsSync(abs)) return res.status(404).json({ error: "Video no disponible" });
 
   const stat = fs.statSync(abs);
   const total = stat.size;

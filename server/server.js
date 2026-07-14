@@ -16,6 +16,7 @@ import { studentsRouter } from "./routes/students.js";
 import { lmsRouter } from "./routes/lms.js";
 import { videoUploadRouter } from "./routes/video-upload.js";
 import { aulaRouter } from "./routes/aula.js";
+import { UPLOADS_DIR, REPO_UPLOADS } from "./paths.js";
 import "./db.js"; // asegura que el esquema exista al arrancar
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -28,7 +29,10 @@ app.use(sessionMiddleware());
 // --- Sitio público (estático, sin cambios de comportamiento) ---
 app.get("/", (req, res) => res.sendFile(path.join(ROOT, "index.html")));
 app.use("/amjp", express.static(path.join(ROOT, "amjp")));
-app.use("/uploads", express.static(path.join(ROOT, "uploads")));
+// Archivos subidos: primero el volumen (uploads nuevos), luego las imágenes
+// históricas incluidas en el repo como respaldo. Si son la misma carpeta, no molesta.
+app.use("/uploads", express.static(UPLOADS_DIR));
+if (REPO_UPLOADS !== UPLOADS_DIR) app.use("/uploads", express.static(REPO_UPLOADS));
 app.get("/admin", (req, res) => res.redirect("/amjp/admin/"));
 
 // --- API del panel ---
