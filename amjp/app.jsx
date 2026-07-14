@@ -1123,9 +1123,11 @@ function HomePage({ photos }){
         </Fragment>
       ))}
 
+      {/* Botón "Ver todas las noticias" ocultado a pedido:
       <main className="wrap front-main">
         <a className="front-more" href={link(ROUTES.NOTICIAS)}>Ver todas las noticias<Icon.arrow/></a>
       </main>
+      */}
 
       {selItem && (
         <ArticleModal item={selItem} onClose={()=>setSel(null)}
