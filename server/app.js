@@ -28,7 +28,8 @@ app.set("trust proxy", 1); // detrás del proxy de Vercel/host
 app.use(sessionMiddleware());
 
 // --- Sitio público (en local lo sirve Express; en Vercel lo sirve el CDN) ---
-app.get("/", (req, res) => res.sendFile(path.join(ROOT, "index.html")));
+// La raíz reenvía directo al sitio (instantáneo, sin pantalla intermedia).
+app.get("/", (req, res) => res.redirect(302, "/amjp/"));
 app.use("/amjp", express.static(path.join(ROOT, "amjp")));
 // Archivos subidos: primero el volumen (uploads nuevos), luego las imágenes
 // históricas incluidas en el repo como respaldo. Si son la misma carpeta, no molesta.
