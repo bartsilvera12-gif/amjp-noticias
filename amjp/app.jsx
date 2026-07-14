@@ -1425,7 +1425,7 @@ function BeneficiosPage(){
 }
 
 /* ---------- Form genérico (Inscripción / Créditos / Actualización / Contacto) ---------- */
-function ContactForm({ title, crumbs, sub, fields, hidden, intro, kind }){
+function ContactForm({ title, crumbs, sub, fields, hidden, intro, kind, embedded }){
   const [vals, setVals] = useState(Object.fromEntries(fields.map(f=>[f.name, ""])));
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
@@ -1449,10 +1449,7 @@ function ContactForm({ title, crumbs, sub, fields, hidden, intro, kind }){
       setSending(false);
     }
   }
-  return (
-    <>
-      <PageHead crumbs={crumbs} title={title} sub={sub}/>
-      <main className="wrap main">
+  const card = (
         <div className="form-card">
           {intro && <div className="form-intro">{intro}</div>}
           {sent ? (
@@ -1486,7 +1483,12 @@ function ContactForm({ title, crumbs, sub, fields, hidden, intro, kind }){
             </form>
           )}
         </div>
-      </main>
+  );
+  if (embedded) return card;
+  return (
+    <>
+      <PageHead crumbs={crumbs} title={title} sub={sub}/>
+      <main className="wrap main">{card}</main>
     </>
   );
 }
@@ -1656,9 +1658,7 @@ function ContactoPage(){
           </aside>
           <div className="contact-form">
             <ContactForm
-              title="" kind="mensaje"
-              crumbs={[]}
-              sub=""
+              embedded kind="mensaje"
               hidden="Contacto"
               fields={[
                 {name:"name", label:"Nombre"},
