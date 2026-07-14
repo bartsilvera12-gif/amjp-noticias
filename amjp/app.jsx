@@ -1351,22 +1351,13 @@ function GaleriaIndexPage(){
   );
 }
 
-/* Ícono de corazón (estilo lucide) para las fotos de la galería */
-const HeartIcon = (p)=>(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 1 0-7.8 7.8L12 21.2l8.8-8.8a5.5 5.5 0 0 0 0-7.8Z"/></svg>);
-
-/* Foto de álbum con estilo "destination card": imagen a pantalla, degradado, corazón y texto */
+/* Foto de álbum con estilo "destination card": imagen a pantalla, degradado y texto */
 function GalPhotoCell({ photo, onOpen }){
-  const [liked, setLiked] = useState(false);
   return (
     <div className="dcard" role="button" tabIndex={0} onClick={onOpen}
       onKeyDown={e=>{ if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(); } }}>
       <img className="dcard-img" src={photo.thumb} alt={photo.caption || ""} loading="lazy"/>
       <span className="dcard-grad" aria-hidden="true"></span>
-      <button type="button" className={"dcard-like" + (liked ? " is-liked" : "")}
-        onClick={e=>{ e.stopPropagation(); setLiked(v=>!v); }}
-        aria-label={liked ? "Quitar me gusta" : "Me gusta"}>
-        <HeartIcon/>
-      </button>
       {photo.caption && <div className="dcard-text">{photo.caption}</div>}
     </div>
   );
