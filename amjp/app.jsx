@@ -58,9 +58,10 @@ const NAV = [
   ]},
   { label:"Resoluciones", href: ROUTES.RESOL },
   { label:"Socios", children:[
-    ["Aula Virtual", ROUTES.AULA],
+    // Ocultos temporalmente hasta que el backend esté online (Aula e Inscripción necesitan servidor):
+    // ["Aula Virtual", ROUTES.AULA],
     ["Cursos", ROUTES.CURSOS],
-    ["Inscripción a cursos", ROUTES.INSCR_CURSO],
+    // ["Inscripción a cursos", ROUTES.INSCR_CURSO],
     ["Eventos", ROUTES.EVENTOS],
     ["Deportes", ROUTES.DEPORTES],
     ["Beneficios", ROUTES.BENEF],
@@ -1793,7 +1794,6 @@ function App(){
         defaultCat="Institucional"/>; break;
     case ROUTES.CURSOS:
       page = <SectionList items={window.CURSOS} photos={t.photos} flat
-        cta={{ label:"Inscribirme a un curso", href:ROUTES.INSCR_CURSO }}
         title="Cursos" kicker="Curso destacado"
         crumbs={[{label:"Inicio", href:ROUTES.HOME},{label:"Socios"},{label:"Cursos"}]}
         sub="Capacitación continua para magistrados, fiscales y defensores."
