@@ -103,7 +103,7 @@ function TopBar({ dark, onToggleDark }){
   return (
     <div className="topbar">
       <div className="wrap topbar-in">
-        <span className="topbar-tag">Casa del Magistrado · Asunción, Paraguay</span>
+        {/* <span className="topbar-tag">Casa del Magistrado · Asunción, Paraguay</span> */}
         <nav className="topbar-links">
           <a href={link(ROUTES.ACTU)}>Acceso socios</a>
           <span className="dot">·</span>
