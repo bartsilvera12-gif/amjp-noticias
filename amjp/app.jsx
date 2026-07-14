@@ -1123,7 +1123,9 @@ function HomePage({ photos }){
     <>
       <Featured items={hero} photos={photos} onOpen={openItem} label="Lo último"/>
 
+      {/* Carrusel "Nuestra Sede / Casa del Magistrado" ocultado a pedido:
       <HomeHeroCarousel/>
+      */}
 
       {sections.map((s, i)=>(
         <Fragment key={s.cat}>
