@@ -13,6 +13,7 @@
   },
   "license": "ISC",
   "dependencies": {
+    "@libsql/client": "^0.17.4",
     "cookie-session": "^2.1.1",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
