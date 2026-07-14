@@ -1334,13 +1334,14 @@ function GaleriaIndexPage(){
         title="Galería de imágenes"
         sub={`${albums.length} álbumes documentando la vida institucional de la AMJP.`}/>
       <main className="wrap main">
-        <div className="grid-cards">
+        <div className="gcard-grid">
           {albums.map((alb, i)=>(
-            <a className="pres-card" key={i} href={link(ROUTES.GAL + "/" + alb.slug)}>
-              <div className="pres-img"><img src={alb.thumb} alt={alb.title} loading="lazy"/></div>
-              <div className="pres-info">
-                <h3 className="pres-name">{alb.title}</h3>
-                <p className="pres-period">{alb.date} · {(alb.photos||[]).length} fotos</p>
+            <a className="gcard" key={i} href={link(ROUTES.GAL + "/" + alb.slug)}>
+              <div className="gcard-img"><img src={alb.thumb} alt={alb.title} loading="lazy"/></div>
+              <span className="gcard-badge" aria-hidden="true"><Icon.arrow/></span>
+              <div className="gcard-body">
+                <h3 className="gcard-title">{alb.title}</h3>
+                <p className="gcard-sub">{alb.date} · {(alb.photos||[]).length} fotos</p>
               </div>
             </a>
           ))}
