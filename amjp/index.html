@@ -740,8 +740,9 @@ button{ font-family:inherit; cursor:pointer; }
 .cd-hero img{ width:100%; height:auto; border-radius:12px; display:block; box-shadow:0 24px 60px -30px rgba(12,26,48,.42); }
 .cd-hero-cap{ margin:14px 0 0; font-size:13.5px; color:var(--muted); text-align:center; font-style:italic; }
 .cd-sec{ margin-bottom:54px; }
-.cd-table-wrap{ overflow-x:auto; border:1px solid var(--line); border-radius:10px; background:var(--card); }
-.cd-table{ width:100%; border-collapse:collapse; font-size:14.5px; }
+.cd-table-wrap{ width:fit-content; max-width:100%; margin:0 auto; overflow-x:auto;
+  border:1px solid var(--line); border-radius:10px; background:var(--card); }
+.cd-table{ width:auto; border-collapse:collapse; font-size:14.5px; }
 .cd-table th, .cd-table td{ padding:11px 14px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top; }
 .cd-table th{ background:color-mix(in srgb, var(--accent) 8%, var(--card)); color:var(--ink); font-weight:600; letter-spacing:.02em; font-size:13px; text-transform:uppercase; border-right:1px solid var(--line); }
 .cd-table td{ color:var(--ink-soft); border-right:1px solid var(--line); }
