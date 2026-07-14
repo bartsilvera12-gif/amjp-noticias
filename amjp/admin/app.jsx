@@ -5,8 +5,9 @@ const SECTIONS = [
   { key: "noticias", label: "Noticias", enabled: true },
   { key: "resoluciones", label: "Resoluciones", enabled: true },
   { key: "cursos", label: "Cursos", enabled: true },
-  { key: "aula", label: "Contenido de cursos", enabled: true },
-  { key: "alumnos", label: "Alumnos", enabled: true },
+  // Ocultos temporalmente hasta que el Aula Virtual esté online:
+  // { key: "aula", label: "Contenido de cursos", enabled: true },
+  // { key: "alumnos", label: "Alumnos", enabled: true },
   { key: "eventos", label: "Eventos", enabled: true },
   { key: "deportes", label: "Deportes", enabled: true },
   { key: "galeria", label: "Galería", enabled: true },
