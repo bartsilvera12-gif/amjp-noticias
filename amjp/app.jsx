@@ -1353,12 +1353,13 @@ function GaleriaIndexPage(){
 
 /* Foto de álbum con estilo "destination card": imagen a pantalla, degradado y texto */
 function GalPhotoCell({ photo, onOpen }){
+  const cap = stripHtml(photo.caption);
   return (
     <div className="dcard" role="button" tabIndex={0} onClick={onOpen}
       onKeyDown={e=>{ if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(); } }}>
-      <img className="dcard-img" src={photo.thumb} alt={photo.caption || ""} loading="lazy"/>
+      <img className="dcard-img" src={photo.big || photo.thumb} alt={cap} loading="lazy"/>
       <span className="dcard-grad" aria-hidden="true"></span>
-      {photo.caption && <div className="dcard-text">{photo.caption}</div>}
+      {cap && <div className="dcard-text">{cap}</div>}
     </div>
   );
 }
